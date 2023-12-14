@@ -1,65 +1,79 @@
 const fs = require("fs").promises;
 
 class ProductManager {
+    static ultId = 0;
+
     constructor(path) {
         this.products = [];
         this.path = path;
     }
 
-    getProducts() {
-        return this.products;
-    }
+    //Métodos: 
 
-    async addProduct(product) {
-        if (!product.title || !product.description || !product.price || !product.thumbnail || !product.code || !product.stock) {
-            console.error("Todos los campos son obligatorios");
+    async addProduct(nuevoObjeto) {
+        let { title, description, price, img, code, stock } = nuevoObjeto;
+
+        if (!title || !description || !price || !img || !code || !stock) {
+            console.log("Todos los campos son obligatorios, completalo o moriras en 24 hs");
             return;
         }
 
-        if (this.products.some(p => p.code === product.code)) {
-            console.error("El código del producto ya existe");
+        if (this.products.some(item => item.code === code)) {
+            console.log("El codigo debe ser unico, rata de dos patas!");
             return;
         }
 
-        if (this.products.length === 0) {
-            product.id = 1;
-        } else {
-            product.id = this.products[this.products.length - 1].id + 1;
+        const newProduct = {
+            id: ++ProductManager.ultId,
+            title,
+            description,
+            price,
+            img,
+            code,
+            stock
         }
 
-        this.products.push(product);
+
+        this.products.push(newProduct);
+
+        //Guardamos el array en el archivo: 
 
         await this.guardarArchivo(this.products);
+
+    }
+
+    getProducts() {
+        console.log(this.products);
     }
 
     async getProductById(id) {
         try {
             const arrayProductos = await this.leerArchivo();
-            const product = arrayProductos.find(p => p.id === id);
+            const buscado = arrayProductos.find(item => item.id === id);
 
-            if (product) {
-                return product;
+            if (!buscado) {
+                console.log("Producto no encontrado");
             } else {
-                console.error("Producto no encontrado. ID:", id);
-                return null;
+                console.log("Siii, lo encontramos! ");
+                return buscado;
             }
+
         } catch (error) {
-            console.error("Error al leer el archivo:", error.mensaje);
+            console.log("Error al leer el archivo ", error);
         }
+
     }
+
+    //Nuevos metodos desafio 2: 
 
     async leerArchivo() {
         try {
             const respuesta = await fs.readFile(this.path, "utf-8");
-            if (!respuesta) {
-                console.error("El contenido del archivo es vacío.");
-                return [];
-            }
             const arrayProductos = JSON.parse(respuesta);
             return arrayProductos;
+
         } catch (error) {
-            console.error("Error al leer el archivo:", error.message);
-            return [];
+            console.log("Eerror al leer un archivo", error);
         }
     }
 
@@ -71,6 +85,7 @@ class ProductManager {
         }
     }
 
+    //Actualizamos algun producto:
     async updateProduct(id, productoActualizado) {
         try {
             const arrayProductos = await this.leerArchivo();
@@ -78,86 +93,110 @@ class ProductManager {
             const index = arrayProductos.findIndex(item => item.id === id);
 
             if (index !== -1) {
-                // Utiliza el array actualizado después de la operación splice
+                //Puedo usar el método de array splice para reemplazar el objeto en la posicion del index: 
                 arrayProductos.splice(index, 1, productoActualizado);
                 await this.guardarArchivo(arrayProductos);
             } else {
-                console.log("No se encontró el producto");
+                console.log("no se encontró el producto");
             }
+
         } catch (error) {
             console.log("Error al actualizar el producto", error);
         }
     }
+
 }
 
-class Product {
-    constructor(title, description, price, thumbnail, code, stock) {
-        this.title = title;
-        this.description = description;
-        this.price = price;
-        this.thumbnail = thumbnail;
-        this.code = code;
-        this.stock = stock;
-    }
-}
+//Testing: 
 
-const manejadorProducts = new ProductManager("./productos.json");
+//Se creará una instancia de la clase “ProductManager”
 
-manejadorProducts.getProducts();
+const manager = new ProductManager("./productos.json");
+
+//Se llamará “getProducts” recién creada la instancia, debe devolver un arreglo vacío []
+
+
+manager.getProducts();
+
+
+//Se llamará al método “addProduct” con los campos:
+//title: “producto prueba”
+//description:”Este es un producto prueba”
+//price:200,
+//thumbnail:”Sin imagen”
+//code:”abc123”,
+//stock:25
 
 const fideos = {
     title: "fideos",
     description: "los mas ricos",
     price: 150,
-    thumbnail: "sin imagen",
+    img: "sin imagen",
     code: "abc123",
     stock: 30
 }
 
-manejadorProducts.addProduct(fideos);
+
+manager.addProduct(fideos);
+
+//El objeto debe agregarse satisfactoriamente con un id generado automáticamente SIN REPETIRSE
+
+
 
 const arroz = {
     title: "arroz",
-    description: "los menos ricos",
-    price: 170,
-    thumbnail: "sin imagen",
+    description: "el que no se pasa",
+    price: 250,
+    img: "sin imagen",
     code: "abc124",
-    stock: 21
+    stock: 30
 }
 
-manejadorProducts.addProduct(arroz);
+
+manager.addProduct(arroz);
 
 const aceite = {
     title: "aceite",
-    description: "los mas o menos ricos",
-    price: 300,
-    thumbnail: "sin imagen",
+    description: "esta carisimo",
+    price: 15000,
+    img: "sin imagen",
     code: "abc125",
-    stock: 23
+    //stock: 30
 }
 
-manejadorProducts.addProduct(aceite);
+//Repetimos el codigo: 
 
-manejadorProducts.getProducts();
+//manager.addProduct(aceite);
+//Las validaciones funcionan. 
+
+//Se llamará el método “getProducts” nuevamente, esta vez debe aparecer el producto recién agregado
+
+
+manager.getProducts();
+
+//Se llamará al método “getProductById” y se corroborará que devuelva el producto con el id especificado, en caso de no existir, debe arrojar un error.
 
 async function testeamosBusquedaPorId() {
-    const product = await manejadorProducts.getProductById(2);
-    console.log(product);
+    const buscado = await manager.getProductById(2);
+    console.log(buscado);
 }
 
 testeamosBusquedaPorId();
 
+//Se llamará al método “updateProduct” y se intentará cambiar un campo de algún producto, se evaluará que no se elimine el id y que sí se haya hecho la actualización.
+
 const salsa = {
-    title: "salsa tomate",
-    description: "los mas ricos",
+    id: 1,
+    title: "salsa tomate", 
+    description: "los mas ricos", 
     price: 150,
-    thumbnail: "sin imagen",
-    code: "abc126",
-    stock: 34
-}
+    img: "Sin imagen",
+    code: "abc123",
+    stock: 30
+};
 
 async function testeamosActualizar() {
-    await manejadorProducts.updateProduct(1, salsa);
+    await manager.updateProduct(1, salsa);
 }
 
 testeamosActualizar();
