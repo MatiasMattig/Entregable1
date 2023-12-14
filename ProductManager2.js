@@ -14,12 +14,12 @@ class ProductManager {
         let { title, description, price, img, code, stock } = nuevoObjeto;
 
         if (!title || !description || !price || !img || !code || !stock) {
-            console.log("Todos los campos son obligatorios, completalo o moriras en 24 hs");
+            console.log("Todos los campos son obligatorios");
             return;
         }
 
         if (this.products.some(item => item.code === code)) {
-            console.log("El codigo debe ser unico, rata de dos patas!");
+            console.log("El código del producto ya existe");
             return;
         }
 
@@ -33,10 +33,7 @@ class ProductManager {
             stock
         }
 
-
         this.products.push(newProduct);
-
-        //Guardamos el array en el archivo: 
 
         await this.guardarArchivo(this.products);
 
@@ -49,13 +46,13 @@ class ProductManager {
     async getProductById(id) {
         try {
             const arrayProductos = await this.leerArchivo();
-            const buscado = arrayProductos.find(item => item.id === id);
+            const product = this.products.find(p => p.id === id);
 
-            if (!buscado) {
-                console.log("Producto no encontrado");
+            if (product) {
+                return product;
             } else {
-                console.log("Siii, lo encontramos! ");
-                return buscado;
+                console.error("Producto no encontrado. ID:", id);
+                return null;
             }
 
         } catch (error) {
@@ -73,7 +70,7 @@ class ProductManager {
             return arrayProductos;
 
         } catch (error) {
-            console.log("Eerror al leer un archivo", error);
+            console.log("Error al leer un archivo", error);
         }
     }
 
@@ -93,7 +90,6 @@ class ProductManager {
             const index = arrayProductos.findIndex(item => item.id === id);
 
             if (index !== -1) {
-                //Puedo usar el método de array splice para reemplazar el objeto en la posicion del index: 
                 arrayProductos.splice(index, 1, productoActualizado);
                 await this.guardarArchivo(arrayProductos);
             } else {
@@ -107,25 +103,9 @@ class ProductManager {
 
 }
 
-//Testing: 
-
-//Se creará una instancia de la clase “ProductManager”
-
 const manager = new ProductManager("./productos.json");
 
-//Se llamará “getProducts” recién creada la instancia, debe devolver un arreglo vacío []
-
-
 manager.getProducts();
-
-
-//Se llamará al método “addProduct” con los campos:
-//title: “producto prueba”
-//description:”Este es un producto prueba”
-//price:200,
-//thumbnail:”Sin imagen”
-//code:”abc123”,
-//stock:25
 
 const fideos = {
     title: "fideos",
@@ -139,10 +119,6 @@ const fideos = {
 
 manager.addProduct(fideos);
 
-//El objeto debe agregarse satisfactoriamente con un id generado automáticamente SIN REPETIRSE
-
-
-
 const arroz = {
     title: "arroz",
     description: "el que no se pasa",
@@ -151,7 +127,6 @@ const arroz = {
     code: "abc124",
     stock: 30
 }
-
 
 manager.addProduct(arroz);
 
@@ -164,17 +139,7 @@ const aceite = {
     //stock: 30
 }
 
-//Repetimos el codigo: 
-
-//manager.addProduct(aceite);
-//Las validaciones funcionan. 
-
-//Se llamará el método “getProducts” nuevamente, esta vez debe aparecer el producto recién agregado
-
-
 manager.getProducts();
-
-//Se llamará al método “getProductById” y se corroborará que devuelva el producto con el id especificado, en caso de no existir, debe arrojar un error.
 
 async function testeamosBusquedaPorId() {
     const buscado = await manager.getProductById(2);
@@ -182,8 +147,6 @@ async function testeamosBusquedaPorId() {
 }
 
 testeamosBusquedaPorId();
-
-//Se llamará al método “updateProduct” y se intentará cambiar un campo de algún producto, se evaluará que no se elimine el id y que sí se haya hecho la actualización.
 
 const salsa = {
     id: 1,
