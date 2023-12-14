@@ -6,9 +6,7 @@ class ProductManager {
     constructor(path) {
         this.products = [];
         this.path = path;
-    }
-
-    //Métodos: 
+    } 
 
     async addProduct(nuevoObjeto) {
         let { title, description, price, img, code, stock } = nuevoObjeto;
@@ -46,22 +44,19 @@ class ProductManager {
     async getProductById(id) {
         try {
             const arrayProductos = await this.leerArchivo();
-            const product = this.products.find(p => p.id === id);
+            const buscado = arrayProductos.find(item => item.id === id);
 
-            if (product) {
-                return product;
+            if (!buscado) {
+                console.log("Producto no encontrado");
             } else {
-                console.error("Producto no encontrado. ID:", id);
-                return null;
+                return buscado;
             }
 
         } catch (error) {
             console.log("Error al leer el archivo ", error);
         }
 
-    }
-
-    //Nuevos metodos desafio 2: 
+    } 
 
     async leerArchivo() {
         try {
@@ -70,7 +65,7 @@ class ProductManager {
             return arrayProductos;
 
         } catch (error) {
-            console.log("Error al leer un archivo", error);
+            console.log("Eerror al leer un archivo", error);
         }
     }
 
@@ -82,7 +77,6 @@ class ProductManager {
         }
     }
 
-    //Actualizamos algun producto:
     async updateProduct(id, productoActualizado) {
         try {
             const arrayProductos = await this.leerArchivo();
@@ -115,7 +109,6 @@ const fideos = {
     code: "abc123",
     stock: 30
 }
-
 
 manager.addProduct(fideos);
 
